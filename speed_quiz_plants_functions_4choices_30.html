@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Kru Pai Classroom – Speed Quiz: หน้าที่ของโครงสร้างพืช (4 ตัวเลือก)</title>
+<style>
+  :root{
+    --bg:#ffffff;--fg:#111;--primary:#2e7d32;--primary-2:#e8f5e9;--ok:#1b5e20;--bad:#c62828;--muted:#888;
+  }
+  html,body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,TH Sarabun New,Prompt,sans-serif;background:var(--bg);color:var(--fg);} 
+  .wrap{max-width:900px;margin:0 auto;padding:20px 16px 64px;}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--primary-2);border-bottom:3px solid var(--primary);padding:14px 16px;border-radius:16px;margin-bottom:16px}
+  header h1{font-size:clamp(18px,4vw,28px);margin:0;line-height:1.2}
+  header .brand{font-weight:700;color:var(--primary)}
+  .card{background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 24px rgba(0,0,0,.06);padding:18px;margin:14px 0}
+  .start h2{margin:0 0 8px;font-size:clamp(18px,3.6vw,24px)}
+  .row{display:grid;grid-template-columns:1fr;gap:12px}
+  label{font-size:14px;color:#444}
+  input[type=text]{width:100%;padding:14px 16px;border-radius:14px;border:1px solid #ddd;font-size:16px}
+  button{cursor:pointer;border:none;padding:12px 18px;border-radius:14px;font-weight:700}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-ghost{background:#f6f6f6}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;font-size:14px;color:#444}
+  .chip{background:#f5f5f5;border-radius:999px;padding:6px 10px}
+  .hidden{display:none}
+  .qno{font-weight:700;color:var(--primary)}
+  .question{font-size:18px;line-height:1.45;margin-bottom:10px}
+  .opts{display:grid;gap:10px;margin-top:8px}
+  .opt{border:1px solid #e5e5e5;border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+  .opt input{margin-top:3px}
+  .opt.correct{border-color:var(--ok);background:#f3fff4}
+  .opt.wrong{border-color:var(--bad);background:#fff5f5}
+  .explain{font-size:14px;color:#333;margin-top:8px;border-left:3px solid #eee;padding-left:10px}
+  .statusbar{display:flex;gap:12px;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;border:1px solid #eee;border-radius:14px;padding:10px 12px;margin:10px 0;z-index:5}
+  .bar{flex:1;height:10px;background:#eee;border-radius:999px;overflow:hidden}
+  .bar>i{display:block;height:100%;width:0;background:var(--primary)}
+  .score{font-weight:800}
+  .timer{font-feature-settings:"tnum" 1, "lnum" 1; font-variant-numeric:tabular-nums}
+  .footer{text-align:center;color:#666;margin-top:24px}
+  .result h2{margin:8px 0 4px}
+  .badge{display:inline-block;background:var(--primary);color:#fff;padding:6px 10px;border-radius:999px;font-size:14px;font-weight:700}
+  .grid-2{display:grid;grid-template-columns:1fr;gap:12px}
+  @media(min-width:720px){.grid-2{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">Kru Pai Classroom</div>
+      <h1>Speed Quiz – หน้าที่ของโครงสร้างพืช (4 ตัวเลือก)</h1>
+    </div>
+    <div class="badge" id="phase">เริ่มต้น</div>
+  </header>
+
+  <!-- Start Screen -->
+  <section id="start" class="card start">
+    <h2>ยินดีต้อนรับ 🌿</h2>
+    <p>ใส่ <strong>ชื่อเล่น</strong> เพื่อเริ่มเล่น ระบบจะจับเวลา <b>10 วินาทีต่อข้อ</b> เลือก <b>โครงสร้าง/ส่วนของพืช</b> ที่ตรงกับหน้าที่ที่ระบุให้ถูกต้อง!</p>
+    <div class="row grid-2">
+      <div>
+        <label>ชื่อเล่น</label>
+        <input id="player" type="text" placeholder="เช่น Mint"/>
+      </div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn-primary" id="btnStart" type="button">เริ่มเล่น</button>
+    </div>
+  </section>
+
+  <!-- Quiz Screen -->
+  <section id="quiz" class="hidden">
+    <div class="statusbar">
+      <div class="meta">
+        <span>ผู้เล่น: <strong id="who">-</strong></span>
+        <span class="chip">ข้อ <span id="cur">1</span>/<span id="total">-</span></span>
+        <span class="chip score">คะแนน <span id="pts">0</span></span>
+      </div>
+      <div class="meta">
+        <span class="timer">⏳ <span id="left">00</span>s</span>
+      </div>
+    </div>
+    <div id="qArea" class="card"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button id="btnPrev" class="btn-ghost" type="button">ย้อนกลับ</button>
+      <button id="btnNext" class="btn-primary" type="button">ข้อถัดไป ▶</button>
+      <button id="btnFinish" class="btn-ghost hidden" type="button">จบเกม</button>
+      <button id="btnBackHome" class="btn-ghost" type="button" onclick="return backHome(event)">🏠 กลับหน้าแรก</button>
+    </div>
+  </section>
+
+  <!-- Result Screen -->
+  <section id="result" class="hidden card result">
+    <h2>สรุปคะแนน 🎉</h2>
+    <p><strong id="sumName"></strong> ได้คะแนน <strong id="sumScore">0</strong> / <span id="sumTotal">0</span></p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 6px">
+      <button class="btn-primary" id="btnReview" type="button">ดูเฉลย</button>
+      <button class="btn-ghost" id="btnRestart" type="button" onclick="return backHome(event)">กลับหน้าแรก</button>
+    </div>
+    <div id="review" class="hidden"></div>
+  </section>
+
+  <div class="footer">© Kru Pai Classroom · Speed Quiz 30 ข้อ</div>
+</div>
+
+<script>
+// ประเภท/ส่วนของพืช
+const TYPES = ["ราก","ลำต้น","ใบ","ดอก","ผล/เมล็ด","โครงสร้างพิเศษ"];
+
+// ธนาคารคำถาม 30 ข้อ: t = ดัชนี TYPES
+const BANK = [
+  // ราก
+  {stem:"ดูดน้ำและแร่ธาตุจากดินขึ้นสู่พืช", t:0, note:"หน้าที่หลักของราก"},
+  {stem:"ยึดลำต้นให้มั่นคงในดิน", t:0, note:"ช่วยพยุงพืชไม่ให้ล้ม"},
+  {stem:"เก็บอาหารสะสม เช่น มันสำปะหลัง แครอท", t:0, note:"รากสะสมอาหาร"},
+  {stem:"รากอากาศของกล้วยไม้ ช่วยดูดน้ำจากอากาศและหายใจ", t:0, note:"รากพิเศษ"},
+  {stem:"ส่งต่อน้ำและเกลือแร่เข้าสู่ลำต้น", t:0, note:"ราก → ลำต้น"},
+  // ลำต้น
+  {stem:"ลำเลียงน้ำและแร่ธาตุจากรากไปสู่ใบ", t:1, note:"ท่าลำเลียง xylem"},
+  {stem:"ลำเลียงอาหารจากใบไปยังส่วนต่างๆ ของพืช", t:1, note:"ท่าลำเลียง phloem"},
+  {stem:"พยุงใบ ดอก และผล ให้อยู่ในตำแหน่งรับแสง/ผสมเกสร", t:1, note:"โครงสร้างรองรับ"},
+  {stem:"ลำต้นใต้ดินบางชนิดทำหน้าที่เก็บอาหาร (ขิง ข่า)", t:1, note:"ลำต้นสะสมอาหาร"},
+  {stem:"ช่วยให้พืชสูงขึ้นเพื่อรับแสงมากขึ้น", t:1, note:"ลำต้นยืดยาว"},
+  // ใบ
+  {stem:"สังเคราะห์แสงสร้างอาหารโดยใช้คลอโรฟิลล์", t:2, note:"หน้าที่หลักของใบ"},
+  {stem:"มีปากใบเพื่อแลกเปลี่ยนก๊าซ O₂/CO₂ และไอน้ำ", t:2, note:"stomata"},
+  {stem:"คายน้ำเพื่อช่วยลำเลียงและลดความร้อน", t:2, note:"transpiration"},
+  {stem:"ใบบางชนิดดัดแปลงเก็บอาหาร เช่น หัวหอม", t:2, note:"ใบสะสมอาหาร"},
+  {stem:"ใบมีเส้นใบและแผ่นใบรับแสง", t:2, note:"โครงสร้างเพื่อรับแสง"},
+  // ดอก
+  {stem:"เป็นอวัยวะสืบพันธุ์แบบอาศัยเพศของพืชดอก", t:3, note:"flower reproduction"},
+  {stem:"กลีบดอกมีสี/กลิ่น ดึงดูดผู้ผสมเกสร", t:3, note:"attraction"},
+  {stem:"เกสรตัวผู้สร้างเรณู (เซลล์สืบพันธุ์เพศผู้)", t:3, note:"stamen/anther"},
+  {stem:"รังไข่ภายในเกสรตัวเมียจะพัฒนาเป็นผล", t:3, note:"ovary → fruit"},
+  {stem:"ยอดเกสรตัวเมียรับเกสรเพื่อผสม", t:3, note:"stigma"},
+  // ผลและเมล็ด
+  {stem:"ผลห่อหุ้มและป้องกันเมล็ด", t:4, note:"protection"},
+  {stem:"ผลช่วยแพร่กระจายพันธุ์ด้วยลม สัตว์ หรือน้ำ", t:4, note:"dispersal"},
+  {stem:"เมล็ดมีอาหารสะสมหล่อเลี้ยงต้นอ่อน", t:4, note:"endosperm/cotyledon"},
+  {stem:"เปลือกเมล็ดป้องกันอันตรายต่อต้นอ่อน", t:4, note:"seed coat"},
+  {stem:"การงอกของเมล็ดเริ่มจากรากอ่อนโผล่ออกมาก่อน", t:4, note:"radicle first"},
+  // โครงสร้างพิเศษ
+  {stem:"หนามกระบองเพชรคือใบที่เปลี่ยนรูป ลดการคายน้ำ", t:5, note:"modified leaves"},
+  {stem:"ใบตำลึงดัดแปลงเป็นมือเกาะเพื่อยึดเกาะ", t:5, note:"tendril = modified leaf"},
+  {stem:"หัวมันฝรั่งเป็นลำต้นใต้ดินเก็บอาหาร", t:5, note:"tuber = stem"},
+  {stem:"หัวหอมคือใบเก็บอาหารหลายชั้นซ้อนกัน", t:5, note:"bulb = leaves"},
+  {stem:"รากหายใจ/รากค้ำยันช่วยรับอากาศหรือพยุงลำต้น", t:5, note:"pneumatophore/prop root"}
+];
+
+function shuffle(arr){
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// สร้างชุดคำถาม 30 ข้อ พร้อมสุ่มตัวเลือก 4 ข้อจาก TYPES
+function buildQuestions(){
+  const bank = shuffle([...BANK]); // สุ่มลำดับคำถาม
+  const qs = bank.map((b,idx)=>{
+    const correct = TYPES[b.t];
+    // เลือกตัวลวง 3 ตัวจาก TYPES ที่ไม่ใช่คำตอบ
+    const pool = TYPES.map((x,i)=>({name:x,i})).filter(x=>x.i!==b.t);
+    shuffle(pool);
+    const distractors = pool.slice(0,3).map(x=>x.name);
+    const choices = shuffle([correct, ...distractors]);
+    const answer = choices.indexOf(correct);
+    return {
+      no: idx+1,
+      q: `หน้าที่ต่อไปนี้เป็นของส่วนใดของพืช: ${b.stem}`,
+      choices,
+      answer,
+      explain: `คำตอบ: ${correct} — ${b.note}`
+    };
+  });
+  return qs;
+}
+
+const el = id=>document.getElementById(id);
+const start = el('start');
+const quiz = el('quiz');
+const result = el('result');
+const phase = el('phase');
+
+let QUESTIONS = [];
+el('total').textContent = 30;
+
+let state = {i:0, score:0, secs:10, timer:null, remain:10, name:"-", answers:[]};
+
+function fmt(n){return String(n).padStart(2,'0')}
+
+function renderQ(){
+  const item = QUESTIONS[state.i];
+  el('cur').textContent = state.i+1; 
+  const html = `
+    <div class="qno">ข้อ ${state.i+1}</div>
+    <div class="question">${item.q}</div>
+    <div class="opts">
+      ${item.choices.map((c,idx)=>{
+        return `<label class="opt"><input type="radio" name="opt" value="${idx}"> <div>${idx+1}. ${c}</div></label>`
+      }).join('')}
+    </div>
+    <div class="explain hidden" id="exp">${item.explain||''}</div>
+  `;
+  el('qArea').innerHTML = html;
+  el('left').textContent = fmt(state.secs);
+  const bar = document.createElement('div');
+  bar.className = 'bar';
+  const fill = document.createElement('i');
+  bar.appendChild(fill);
+  el('qArea').prepend(bar);
+  let t = state.secs, total = state.secs;
+  clearInterval(state.timer);
+  state.timer = setInterval(()=>{
+    t--; state.remain = t; el('left').textContent = fmt(Math.max(0,t));
+    fill.style.width = `${100*(1 - (t/total))}%`;
+    if(t<=0){ clearInterval(state.timer); lockAndCheck(null); }
+  },1000);
+  el('qArea').querySelectorAll('input[name="opt"]').forEach(r=>{
+    r.addEventListener('change',()=> lockAndCheck(parseInt(r.value,10)) )
+  });
+  el('btnPrev').disabled = state.i===0;
+  el('btnNext').classList.toggle('hidden', state.i===QUESTIONS.length-1);
+  el('btnFinish').classList.toggle('hidden', state.i!==QUESTIONS.length-1);
+}
+
+function lockAndCheck(selected){
+  clearInterval(state.timer);
+  const item = QUESTIONS[state.i];
+  const list = el('qArea').querySelectorAll('.opt');
+  list.forEach((row,idx)=>{
+    row.classList.remove('correct','wrong');
+    const inp = row.querySelector('input');
+    if(inp) inp.disabled = true;
+    if(idx===item.answer) row.classList.add('correct');
+    if(selected!==null){ if(idx===selected && selected!==item.answer) row.classList.add('wrong'); }
+  });
+  const ok = selected===item.answer; 
+  if(selected!==null && ok){ state.score++; }
+  state.answers[state.i] = {sel:selected, ok, correct:item.answer};
+  el('pts').textContent = state.score;
+  const exp = el('exp');
+  if(exp && (item.explain||'').length){ exp.classList.remove('hidden'); }
+}
+
+// ปุ่มเริ่ม
+el('btnStart').onclick = ()=>{
+  state.name = (el('player').value||'นักเรียน');
+  state.secs = 10;
+  state.i=0; state.score=0; state.answers=[];
+  el('who').textContent = state.name; el('pts').textContent = '0'; el('total').textContent = 30;
+  QUESTIONS = buildQuestions(); // สุ่มทั้งคำถามและตัวเลือกใหม่ทุกครั้งที่เริ่ม
+  start.classList.add('hidden'); quiz.classList.remove('hidden'); result.classList.add('hidden'); phase.textContent='กำลังทำแบบทดสอบ';
+  renderQ();
+};
+
+// ปุ่มนำทาง
+el('btnNext').onclick = ()=>{ if(state.i<QUESTIONS.length-1){ state.i++; renderQ(); } };
+el('btnPrev').onclick = ()=>{ if(state.i>0){ state.i--; renderQ(); } };
+el('btnFinish').onclick = ()=>{
+  clearInterval(state.timer);
+  quiz.classList.add('hidden'); result.classList.remove('hidden'); phase.textContent='สรุปผล';
+  el('sumName').textContent = state.name;
+  el('sumScore').textContent = state.score;
+  el('sumTotal').textContent = QUESTIONS.length;
+};
+
+// ดูเฉลย
+el('btnReview').onclick = ()=>{
+  const box = el('review');
+  const rows = QUESTIONS.map((q,idx)=>{
+    const ans = q.choices[q.answer];
+    const pick = state.answers[idx]?.sel;
+    const ok = state.answers[idx]?.ok;
+    const pickTxt = (pick!=null)? q.choices[pick] : '—';
+    return `<div class="card" style="margin:8px 0">
+      <div><strong>ข้อ ${idx+1}:</strong> ${q.q}</div>
+      <div style="margin-top:6px">คำตอบที่ถูก: <span style="color:${ok?'var(--ok)':'var(--primary)'}">${ans}</span> · ของหนู: <em>${pickTxt}</em></div>
+      ${q.explain? `<div class="explain">${q.explain}</div>`: ''}
+    </div>`;
+  }).join('');
+  box.innerHTML = rows;
+  box.classList.remove('hidden');
+};
+
+// ฟังก์ชันกลับหน้าแรก (ผูกทั้ง inline และ global)
+function backHome(e){
+  if(e) e.preventDefault();
+  try { clearInterval(state.timer); } catch(_){}
+  quiz.classList.add('hidden');
+  result.classList.add('hidden');
+  start.classList.remove('hidden');
+  phase.textContent = 'เริ่มต้น';
+  // reset ขั้นต่ำ
+  state.i = 0; state.score = 0; state.answers = [];
+  return false;
+}
+window.backHome = backHome;
+</script>
+</body>
+</html>
